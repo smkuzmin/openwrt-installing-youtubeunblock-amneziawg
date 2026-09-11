@@ -257,7 +257,10 @@ reboot
 
 - Выходим из веб-интерфейса (**Log out**) и входим заново - в меню **Services** появится новый пункт **youtubeUnblock**.
 - Проверяем работу YouTube - если не заработал, то с провайдером Ростелеком помогло это:
-  - **Services** -> **youtubeUnblock** -> **Configuration** -> **Default section** -> **Edit** -> **\[ \] Fake sni** -> **Save** -> **Save & Apply**
+  - **Services** -> **youtubeUnblock** -> **Configuration** -> **Default section** -> **Edit**
+    - Вкладка **General** -> **Fake sni: \[ \]**
+    - Вкладка **UDP** -> **UDP QUIC filter**: **\[x\] all**
+  - **Save** -> **Save & Apply**
 - Вот и все - теперь YouTube работает без VPN.
 
 ***
@@ -435,14 +438,14 @@ reboot
   ### Проверяем, активен ли youtubeUnblock, прежде чем добавлять правила и hotplug-скрипт для него
   if /etc/init.d/youtubeUnblock running &>/dev/null; then
     echo 'Active youtubeUnblock detected. Adding routing rules for YouTube...'
-    ### Добавляем правила с приоритетом 10: Трафик от клиентов (in='lan') в сети YouTube отправляем в таблицу main (LAN/WAN-интерфейсы)
-    # Network -> Routing -> IPv4 Rules -> Add -> Priority: 10, Incoming interface: lan, Destination: YouTube subnet -> Save -> Save & Apply
+    ### Добавляем правила с приоритетом 15: Трафик от клиентов (in='lan') в сети YouTube отправляем в таблицу main (LAN/WAN-интерфейсы)
+    # Network -> Routing -> IPv4 Rules -> Add -> Priority: 15, Incoming interface: lan, Destination: YouTube subnet -> Save -> Save & Apply
     for net in $YOUTUBE_NETS; do
       uci add network rule >/dev/null
       uci set network.@rule[-1].in='lan'
       uci set network.@rule[-1].dest="$net"
       uci set network.@rule[-1].lookup='main'
-      uci set network.@rule[-1].priority='10'
+      uci set network.@rule[-1].priority='15'
     done
     ### Создаём hotplug-скрипт: Исключаем AWG-трафик из обработки youtubeUnblock
     # Скрипт будет автоматически срабатывать при каждом поднятии интерфейса awg0
